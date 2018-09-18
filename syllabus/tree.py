@@ -3,6 +3,7 @@ from aqt.qt import *
 from PyQt5.QtWidgets import QTreeView
 
 from .info import getTags, getParent, getSkel, isChild, getDecks, getHiers
+from .node import Node
 from .stats import note_count
 
 class SyllabusTreeView(QTreeView):
@@ -11,25 +12,29 @@ class SyllabusTreeView(QTreeView):
 
     def __init__(self):
         super().__init__()
-        self.model = QStandardItemModel()
+        self.model = QStandardItemModel(0,2)
 
-        self.model.setHeaderData(self.NAME, Qt.Horizontal, 'Name')
-        self.model.setHeaderData(self.COUNT, Qt.Horizontal, 'Count')
-        self.model.setHeaderData(self.PC, Qt.Horizontal, 'Percent %')
+        self.model.setHeaderData(0, Qt.Horizontal, 'Name')
+        self.model.setHeaderData(1, Qt.Horizontal, 'Count')
+        self.model.setHeaderData(2, Qt.Horizontal, 'Percent %')
 
         self.setModel(self.model)
-        print(getHiers('tags'))
+        
+        tree = Node('collection', 'collection', 'collection')
+        print(tree.name)
+        tree.acquire_child_decks()
+        tree.acquire_child_tags()
+        print(tree.children)
 
-        data = getSkel()
-
-        self._populateTree(data, self.model.invisibleRootItem())
+        self._populateTree([tree], self.model.invisibleRootItem())
     
     def _populateTree(self, children, parent):
-        for child in sorted(children):
-            child_item = QStandardItem(child)
-            parent.appendRow(child_item)
-            if isinstance(children, type({})):
-                self._populateTree(children[child], child_item)
+        for child in children:
+            row = child.to_row()
+            parent.appendRow(row)
+
+            self._populateTree(child.children, row[0])
+
     
     def deck_tree(self, deck):
         model = self.createDataModel()
@@ -58,11 +63,6 @@ class SyllabusTreeView(QTreeView):
         model.setData(model.index(0, self.COUNT), count)
         model.setData(model.index(0, self.PC), pc)
 
-class Node:
-    def __init__(self, name, kind):
-        self.name = name
-        self.type = kind
-        self.children = []
 
 def genDecks():
     decks = list(getDecks().values())

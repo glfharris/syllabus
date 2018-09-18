@@ -2,36 +2,21 @@ from aqt import mw
 
 from .stats import note_count
 
-class DataTree:
-    def __init__(self):
-        self.tree = getTree()
-        self.populate_tree()
-
-    def populate_tree(self):
-
-        for id in self.tree.keys():
-            for tag in self.tree[id]['tags'].keys():
-                self.tree[id]['tags'][tag]['count'] = note_count(id, tag = tag)
-
 def getDecks():
     decks = {}
     for k,v in mw.col.decks.decks.items():
         decks[k] = v['name']
     return decks
 
-def getTags(deck):
-    return mw.col.tags.byDeck(deck)
+def getTags():
+    return getHiers('tags')
 
-def getTree():
-    tree = {}
-    decks = getDecks()
-
-    for id, name in decks.items():
-        tags = getTags(id)
-        tree[id] =  {'id': id, 'name': name, 'tags': {}, 'stats':{}}
-        for tag in tags:
-            tree[id]['tags'][tag] = {}
-    return tree
+def tags_by_deck(deck):
+    tmp = []
+    names =  mw.col.tags.byDeck(deck)
+    for tag in names:
+        tmp += getHier(tag)
+    return list(set(tmp))
 
 def getSkel():
     skel = {}
@@ -39,7 +24,7 @@ def getSkel():
     decks = getDecks()
 
     for id, name in decks.items():
-        tags = getTags(id)
+        tags = tags_by_deck(id)
         tmp[name] = tags
     
     for name, tags in tmp.items():
