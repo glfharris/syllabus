@@ -30,6 +30,9 @@
         </item>
         <item>
          <widget class="QPushButton" name="apply_col_settings">
+          <property name="toolTip">
+           <string>Apply column selections to tree</string>
+          </property>
           <property name="text">
            <string>Apply Columns</string>
           </property>
@@ -43,6 +46,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="export_btn">
+       <property name="toolTip">
+        <string>Export current data to CSV file</string>
+       </property>
        <property name="text">
         <string>Export</string>
        </property>

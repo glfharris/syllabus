@@ -27,13 +27,12 @@ class SyllabusTreeView(QTreeView):
 
     def gen_tree(self, cols=DEFAULT_COLUMNS):
         self.model.removeRows(0, self.model.rowCount())
-        mw.progress.start(label='Collecting data\nThis can take a while for large collections')
+        mw.progress.start(label='Collecting data and building tree\nThis can take a while for large collections')
 
         self.tree = Node('collection', 'collection', 'collection')
         self.tree.acquire_child_decks()
         self.tree.acquire_child_tags()
 
-        mw.progress.finish()
 
         self._populateTree([self.tree], self.model.invisibleRootItem(), cols=cols)
         self.expandToDepth(1)
@@ -43,6 +42,8 @@ class SyllabusTreeView(QTreeView):
                 self.hideColumn(i)
             for i in cols:
                 self.setColumnHidden(i, False)
+        
+        mw.progress.finish()
     
     def _populateTree(self, children, parent, cols=DEFAULT_COLUMNS):
         for child in children:

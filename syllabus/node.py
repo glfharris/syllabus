@@ -6,8 +6,9 @@ from aqt import mw, qt
 from .info import tags_by_deck, getDecks
 from .stats import count_total, count_new, count_learning, count_young, count_mature
 
+# The Order for these must remain the same otherwise shenanigans
 HEADER_LABELS = ['Name', 'Total', 'New', 'Learning', 'Young', 'Mature']
-NAME,TOTAL,NEW,LEARNING,YOUNG,MATURE = range(len(HEADER_LABELS))
+NAME,TOTAL,NEW,LEARNING,YOUNG,MATURE= range(len(HEADER_LABELS))
 DEFAULT_COLUMNS = [NAME, TOTAL, NEW, LEARNING, YOUNG, MATURE]
 
 # sys.setrecursionlimit(4000)
