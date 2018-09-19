@@ -5,6 +5,9 @@ build: clean buildui
 clean:
 	rm -rf build/*
 
+buildrelease: build
+	cd build/dist21; zip -r ../anki-syllabus-v21.zip .
+
 buildui: cleanui
 	pyuic5 ui/ui_dialog.ui -o syllabus/ui_dialog.py
 

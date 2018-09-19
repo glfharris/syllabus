@@ -4,7 +4,7 @@ import sys
 from aqt import mw, qt
 
 from .info import tags_by_deck, getDecks
-from .stats import *
+from .stats import count_total, count_new, count_learning, count_young, count_mature
 
 sys.setrecursionlimit(4000)
 
@@ -21,12 +21,7 @@ class Node:
     
     def to_row(self):
         name = qt.QStandardItem(self.name)
-        if self.kind is 'deck':
-            name.setIcon(qt.QIcon('/home/glfharris/src/syllabus/syllabus/icons/deck.svg'))
-        if self.kind is 'tag':
-            name.setIcon(qt.QIcon('/home/glfharris/src/syllabus/syllabus/icons/tag.svg'))
-        if self.kind is 'collection':
-            name.setIcon(qt.QIcon('/home/glfharris/src/syllabus/syllabus/icons/collection.svg'))
+        name.setIcon(qt.QIcon(':/icons/{}.svg'.format(self.kind)))
 
         return [name, self.q_total(), self.q_new(), self.q_learning(), self.q_young(), self.q_mature()]
 
