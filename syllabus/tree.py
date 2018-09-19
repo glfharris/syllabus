@@ -1,41 +1,54 @@
+from aqt import mw
 from aqt.qt import *
 
 from PyQt5.QtWidgets import QTreeView
 
 from .info import getParent, isChild, getDecks, getHiers
-from .node import Node
-
-header_labels = ['Name', 'Total', 'New', 'Learning', 'Young', 'Mature']
+from .node import Node, HEADER_LABELS, DEFAULT_COLUMNS
 
 class SyllabusTreeView(QTreeView):
 
-    def __init__(self):
+    def __init__(self, cols=DEFAULT_COLUMNS):
         super().__init__()
         
         self.model = QStandardItemModel()
-        self.model.setHorizontalHeaderLabels(header_labels)
+        self.model.setHorizontalHeaderLabels(HEADER_LABELS)
         self.setModel(self.model) 
         
-        tree = Node('collection', 'collection', 'collection')
-        tree.acquire_child_decks()
-        tree.acquire_child_tags()
-
         self.doubleClicked.connect(self.on_double_click)
 
-        self._populateTree([tree], self.model.invisibleRootItem())
-
-        self.expandAll()
+        
         self.setSortingEnabled(True)
         self.setAlternatingRowColors(True)
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        for i in range(len(header_labels)):
+
+        self.gen_tree(cols=cols)
+        
+
+    def gen_tree(self, cols=DEFAULT_COLUMNS):
+        self.model.removeRows(0, self.model.rowCount())
+        mw.progress.start(label='Collecting data\nThis can take a while for large collections')
+
+        self.tree = Node('collection', 'collection', 'collection')
+        self.tree.acquire_child_decks()
+        self.tree.acquire_child_tags()
+
+        mw.progress.finish()
+
+        self._populateTree([self.tree], self.model.invisibleRootItem(), cols=cols)
+        self.expandToDepth(1)
+        for i in range(len(HEADER_LABELS)):
             self.resizeColumnToContents(i)
+            if i not in cols:
+                self.hideColumn(i)
+            for i in cols:
+                self.setColumnHidden(i, False)
     
-    def _populateTree(self, children, parent):
+    def _populateTree(self, children, parent, cols=DEFAULT_COLUMNS):
         for child in children:
-            row = child.to_row()
+            row = child.to_row(cols=cols)
             parent.appendRow(row)
-            self._populateTree(child.children, row[0])
+            self._populateTree(child.children, row[0], cols=cols)
 
     def on_double_click(self, node_index):
         #node = self.getData(node_index, 0)

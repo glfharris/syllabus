@@ -1,8 +1,12 @@
+import os
+import csv
+
 import aqt
 from aqt import mw
 from aqt.qt import *
 
 from .info import getDecks
+from .node import DEFAULT_COLUMNS, HEADER_LABELS
 from .tree import SyllabusTreeView
 from .ui_dialog import Ui_Syllabus
 
@@ -11,15 +15,49 @@ class SyllabusDialog(QDialog, Ui_Syllabus):
     def __init__(self, mw):
         super().__init__()
         self.setupUi(self)
-        self.tree_view = SyllabusTreeView()
-        self.verticalLayout.addWidget(self.tree_view)
+        self.tree_view = SyllabusTreeView(cols=DEFAULT_COLUMNS)
+
+        self.horizontalLayout.addWidget(self.tree_view, 20)
 
         self.resize(self.tree_view.viewportSizeHint())
 
-        
+        self.export_btn.clicked.connect(self.output_tree)
+        self.apply_col_settings.clicked.connect(self.apply_settings)
+        self.populate_column_settings()
 
         self.show()
         self.activateWindow()
+    
+    def populate_column_settings(self):
+        for i, label in enumerate(HEADER_LABELS):
+            item = QListWidgetItem(label)
+            if label != 'Name':
+                item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+            if i in DEFAULT_COLUMNS and label != 'Name':
+                item.setCheckState(Qt.Checked)
+            elif label != 'Name':
+                item.setCheckState(Qt.Unchecked)
+            self.col_settings_list.addItem(item)
+        self.col_settings_list.setSizeAdjustPolicy(QListWidget.AdjustToContents)
+    
+    def apply_settings(self):
+        res = [0, ]
+        for i in range(len(HEADER_LABELS)):
+            if self.col_settings_list.item(i).checkState():
+                res.append(i)
+        self.tree_view.gen_tree(cols=res)
+    
+    def output_tree(self):
+        path, _ = QFileDialog.getSaveFileName(self,"Export Syllabus Tree","tmp.csv","CSV Files (*.csv)")
+        parts = path.split('.')
+        if parts[-1] not in ['csv', 'CSV']:
+            path += '.csv'
+        if path:
+            data = self.tree_view.tree.collate_dicts()
+            with open(path, 'w') as f:
+                writer = csv.DictWriter(f, data[0].keys())
+                writer.writeheader()
+                writer.writerows(data)
 
     def reject(self):
         aqt.dialogs.markClosed("Syllabus")

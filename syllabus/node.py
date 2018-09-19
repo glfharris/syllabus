@@ -6,7 +6,11 @@ from aqt import mw, qt
 from .info import tags_by_deck, getDecks
 from .stats import count_total, count_new, count_learning, count_young, count_mature
 
-sys.setrecursionlimit(4000)
+HEADER_LABELS = ['Name', 'Total', 'New', 'Learning', 'Young', 'Mature']
+NAME,TOTAL,NEW,LEARNING,YOUNG,MATURE = range(len(HEADER_LABELS))
+DEFAULT_COLUMNS = [NAME, TOTAL, NEW, LEARNING, YOUNG, MATURE]
+
+# sys.setrecursionlimit(4000)
 
 class Node:
     tag_names = {}
@@ -15,93 +19,153 @@ class Node:
         self.name = name
         self.kind = kind
         self.children = []
+        self.data = {}
     
     def __repr__(self):
         return '<{} - {}>'.format(self.kind, self.name)
-    
-    def to_row(self):
-        name = qt.QStandardItem(self.name)
-        name.setIcon(qt.QIcon(':/icons/{}.svg'.format(self.kind)))
 
-        return [name, self.q_total(), self.q_new(), self.q_learning(), self.q_young(), self.q_mature()]
+# Data methods
+    def card_total(self):
+        if 'total' not in self.data.keys():
+            if self.kind is 'tag':
+                self.data['total'] = count_total(deck=self.deck, tag=self.name)
+            else:
+                self.data['total'] = count_total(deck=self.deck)
+        return self.data['total']
+    
+    def card_new(self):
+        if 'new' not in self.data.keys():
+            if self.kind is 'tag':
+                self.data['new'] = count_new(deck=self.deck, tag=self.name)
+            else:
+                self.data['new'] = count_new(deck=self.deck)
+        return self.data['new']
+    
+    def card_learning(self):
+        if 'learning' not in self.data.keys():
+            if self.kind is 'tag':
+                self.data['learning'] = count_learning(deck=self.deck, tag=self.name)
+            else:
+                self.data['learning'] = count_learning(deck=self.deck)
+        return self.data['learning']
+    
+    def card_young(self):
+        if 'young' not in self.data.keys():
+            if self.kind is 'tag':
+                self.data['young'] = count_young(deck=self.deck, tag=self.name)
+            else:
+                self.data['young'] = count_young(deck=self.deck)
+        return self.data['young']
+    
+    def card_mature(self):
+        if 'mature' not in self.data.keys():
+            if self.kind is 'tag':
+                self.data['mature'] = count_mature(deck=self.deck, tag=self.name)
+            else:
+                self.data['mature'] = count_mature(deck=self.deck)
+        return self.data['mature']
+            
+
+# QObject Output Methods
+    
+    def to_row(self, cols=[0]):
+        res = []
+        name = qt.QStandardItem(self.name) # We need NAME regardless of whether in cols
+        name.setIcon(qt.QIcon(':/icons/{}.svg'.format(self.kind)))
+        res.append(name)
+
+        if TOTAL in cols:
+            res.append(self.q_total())
+        else:
+            res.append(qt.QStandardItem())
+        
+        if NEW in cols:
+            res.append(self.q_new())
+        else:
+            res.append(qt.QStandardItem())
+        
+        if LEARNING in cols:
+            res.append(self.q_learning())
+        else:
+            res.append(qt.QStandardItem())
+
+        if YOUNG in cols:
+            res.append(self.q_young())
+        else:
+            res.append(qt.QStandardItem())
+        
+        if MATURE in cols:
+            res.append(self.q_mature())
+        else:
+            res.append(qt.QStandardItem())
+        return res
 
 
     def q_total(self):
-        if self.kind is 'tag':
-            count = count_total(deck=self.deck, tag=self.name)
-        else:
-            count = count_total(deck=self.deck)
-        
-        q_total = qt.QStandardItem(str(count))
+        q_total = qt.QStandardItem(str(self.card_total()))
 
         return q_total
     
     def q_new(self):
-        if self.kind is 'tag':
-            count = count_new(deck=self.deck, tag=self.name)
-        else:
-            count = count_new(deck=self.deck)
-        
-        q_new = qt.QStandardItem(str(count))
+        q_new = qt.QStandardItem(str(self.card_new()))
         q_new.setForeground(qt.QColor(0,0,255))
 
         return q_new
     
     def q_learning(self):
-        if self.kind is 'tag':
-            count = count_learning(deck=self.deck, tag=self.name)
-        else:
-            count = count_learning(deck=self.deck)
-        
-        q_learning = qt.QStandardItem(str(count))
+        q_learning = qt.QStandardItem(str(self.card_learning()))
         q_learning.setForeground(qt.QColor(221, 17, 0))
+
         return q_learning
     
     def q_young(self):
-        if self.kind is 'tag':
-            count = count_young(deck=self.deck, tag=self.name)
-        else:
-            count = count_young(deck=self.deck)
-        
-        q_young = qt.QStandardItem(str(count))
+        q_young = qt.QStandardItem(str(self.card_young()))
         q_young.setForeground(qt.QColor(119, 204, 119))
 
         return q_young
     
     def q_mature(self):
-        if self.kind is 'tag':
-            count = count_mature(deck=self.deck, tag=self.name)
-        else:
-            count = count_mature(deck=self.deck)
-        
-        q_mature = qt.QStandardItem(str(count))
+        q_mature = qt.QStandardItem(str(self.card_mature()))
         q_mature.setForeground(qt.QColor(0, 119, 0))
 
         return q_mature
 
+# File Output Methods
+
+    def collate_dicts(self, res=[]):
+        tmp = {'name': self.name, 'deck': self.deck, 'kind': self.kind, 'total': self.card_total()}
+        res.append(tmp)
+        for child in self.children:
+            child.collate_dicts(res)
+        return res
+    
+# Tree Construction Methods
+
     def acquire_child_tags(self):
         if self.deck not in self.tag_names.keys():
             self.tag_names[self.deck] = tags_by_deck(self.deck)
-
+        tmp = []
         for tag_name in self.tag_names[self.deck]:
             tag = Node(tag_name, 'tag', self.deck)
             if self.kind is 'deck' and tag.is_child() is False:
-                self.children.append(tag)
+                tmp.append(tag)
             elif self.kind is 'tag' and self.is_parent_of(tag):
-                self.children.append(tag)
-        
+                tmp.append(tag)
+        tmp.sort(key=lambda x: x.name, reverse=True)
+        self.children += tmp
         for child in self.children:
             child.acquire_child_tags()
 
     def acquire_child_decks(self):
         if self.kind is 'deck' or 'collection':
             decks = getDecks()
-
+            tmp = []
             for k, v in decks.items():
                 node = Node(v, 'deck', k)
                 if self.is_parent_of(node):
-                    self.children.append(node)
-            
+                    tmp.append(node)
+            tmp.sort(key=lambda x: x.name, reverse=True)
+            self.children += tmp
             for child in self.children:
                 child.acquire_child_decks()
 
