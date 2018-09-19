@@ -20,11 +20,14 @@ class SyllabusTreeView(QTreeView):
         tree.acquire_child_decks()
         tree.acquire_child_tags()
 
+        self.doubleClicked.connect(self.on_double_click)
+
         self._populateTree([tree], self.model.invisibleRootItem())
 
         self.expandAll()
         self.setSortingEnabled(True)
         self.setAlternatingRowColors(True)
+        self.setEditTriggers(QAbstractItemView.NoEditTriggers)
         for i in range(len(header_labels)):
             self.resizeColumnToContents(i)
     
@@ -34,4 +37,9 @@ class SyllabusTreeView(QTreeView):
             parent.appendRow(row)
             self._populateTree(child.children, row[0])
 
-
+    def on_double_click(self, node_index):
+        #node = self.getData(node_index, 0)
+        #browser = aqt.dialogs.open("Browser", mw)
+        #browser.form.searchEdit.lineEdit().setText("{}".format(node))
+        #browser.onSearchActivated()
+        pass

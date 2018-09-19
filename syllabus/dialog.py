@@ -1,4 +1,5 @@
 import aqt
+from aqt import mw
 from aqt.qt import *
 
 from .info import getDecks
@@ -14,6 +15,8 @@ class SyllabusDialog(QDialog, Ui_Syllabus):
         self.verticalLayout.addWidget(self.tree_view)
 
         self.resize(self.tree_view.viewportSizeHint())
+
+        
 
         self.show()
         self.activateWindow()
