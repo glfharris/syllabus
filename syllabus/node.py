@@ -84,15 +84,6 @@ class Node:
 
         return q_mature
 
-    
-    def acquire_count(self, tot=0):
-        if self.kind is 'deck':
-            return note_count(self.deck)
-        if self.kind is 'tag':
-            return note_count(self.deck, tag=self.name)
-        if self.kind is 'collection':
-            return mw.col.db.scalar('select count() from cards')
-
     def acquire_child_tags(self):
         if self.deck not in self.tag_names.keys():
             self.tag_names[self.deck] = tags_by_deck(self.deck)

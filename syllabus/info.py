@@ -1,15 +1,10 @@
 from aqt import mw
 
-from .stats import note_count
-
 def getDecks():
     decks = {}
     for k,v in mw.col.decks.decks.items():
         decks[k] = v['name']
     return decks
-
-def getTags():
-    return getHiers('tags')
 
 def tags_by_deck(deck):
     tmp = []
@@ -17,26 +12,6 @@ def tags_by_deck(deck):
     for tag in names:
         tmp += getHier(tag)
     return list(set(tmp))
-
-def getSkel():
-    skel = {}
-    tmp = {}
-    decks = getDecks()
-
-    for id, name in decks.items():
-        tags = tags_by_deck(id)
-        tmp[name] = tags
-    
-    for name, tags in tmp.items():
-        if isChild(name):
-            parent = getParent(name)
-            skel[parent]
-        else:
-            skel[name] = tags
-
-    return skel
-    
-    
 
 def getParent(name):
     parts = name.split('::')
