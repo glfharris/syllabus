@@ -13,15 +13,7 @@
   <property name="windowTitle">
    <string>Syllabus</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0">
-   <item>
-    <widget class="QComboBox" name="deck_sel">
-     <property name="editable">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-  </layout>
+  <layout class="QVBoxLayout" name="verticalLayout" stretch=""/>
  </widget>
  <resources/>
  <connections/>

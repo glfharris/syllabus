@@ -1,8 +1,9 @@
+import os
 import sys
 
 from aqt import mw, qt
 
-from .info import *
+from .info import tags_by_deck, getDecks
 from .stats import *
 
 sys.setrecursionlimit(4000)
@@ -20,8 +21,68 @@ class Node:
     
     def to_row(self):
         name = qt.QStandardItem(self.name)
-        count = qt.QStandardItem(str(self.acquire_count()))
-        return [name, count]
+        if self.kind is 'deck':
+            name.setIcon(qt.QIcon('/home/glfharris/src/syllabus/syllabus/icons/deck.svg'))
+        if self.kind is 'tag':
+            name.setIcon(qt.QIcon('/home/glfharris/src/syllabus/syllabus/icons/tag.svg'))
+        if self.kind is 'collection':
+            name.setIcon(qt.QIcon('/home/glfharris/src/syllabus/syllabus/icons/collection.svg'))
+
+        return [name, self.q_total(), self.q_new(), self.q_learning(), self.q_young(), self.q_mature()]
+
+
+    def q_total(self):
+        if self.kind is 'tag':
+            count = count_total(deck=self.deck, tag=self.name)
+        else:
+            count = count_total(deck=self.deck)
+        
+        q_total = qt.QStandardItem(str(count))
+
+        return q_total
+    
+    def q_new(self):
+        if self.kind is 'tag':
+            count = count_new(deck=self.deck, tag=self.name)
+        else:
+            count = count_new(deck=self.deck)
+        
+        q_new = qt.QStandardItem(str(count))
+        q_new.setForeground(qt.QColor(0,0,255))
+
+        return q_new
+    
+    def q_learning(self):
+        if self.kind is 'tag':
+            count = count_learning(deck=self.deck, tag=self.name)
+        else:
+            count = count_learning(deck=self.deck)
+        
+        q_learning = qt.QStandardItem(str(count))
+        q_learning.setForeground(qt.QColor(221, 17, 0))
+        return q_learning
+    
+    def q_young(self):
+        if self.kind is 'tag':
+            count = count_young(deck=self.deck, tag=self.name)
+        else:
+            count = count_young(deck=self.deck)
+        
+        q_young = qt.QStandardItem(str(count))
+        q_young.setForeground(qt.QColor(119, 204, 119))
+
+        return q_young
+    
+    def q_mature(self):
+        if self.kind is 'tag':
+            count = count_mature(deck=self.deck, tag=self.name)
+        else:
+            count = count_mature(deck=self.deck)
+        
+        q_mature = qt.QStandardItem(str(count))
+        q_mature.setForeground(qt.QColor(0, 119, 0))
+
+        return q_mature
 
     
     def acquire_count(self, tot=0):
@@ -82,17 +143,3 @@ class Node:
             return False
         else:
             return True
-    
-    def change_deck(deck):
-        self.deck = deck
-        for child in self.children:
-            child.change_deck(deck)
-
-def generate_tag_tree():
-    tags = getHiers('tags')
-    tree = []
-
-    for tag in tags:
-        tag_node = Node(tag, 'tag', '')
-        if tag_node.is_child() is False:
-            tree.append(tag_node)

@@ -15,24 +15,11 @@ class SyllabusDialog(QDialog, Ui_Syllabus):
         self.setupUi(self)
         self.tree_view = SyllabusTreeView()
         self.verticalLayout.addWidget(self.tree_view)
-        self.mw = mw
 
-        self.populate_combo()
-        self.deck_sel.currentIndexChanged.connect(self.deck_changed)
-
-        self.curr_deck = str(self.mw.col.decks.active())
+        self.resize(self.tree_view.viewportSizeHint())
 
         self.show()
         self.activateWindow()
-
-    def populate_combo(self):
-        decks = getDecks()
-        for k,v in decks.items():
-            self.deck_sel.addItem(v,k)
-
-    def deck_changed(self, i):
-        self.curr_deck = self.deck_sel.itemData(i)
-        #self.tree_view.deck_tree(self.curr_deck)
 
     def reject(self):
         aqt.dialogs.markClosed("Syllabus")

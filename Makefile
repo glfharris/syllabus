@@ -1,6 +1,6 @@
 build: clean buildui
 	mkdir -p build/dist21
-	cp syllabus/* build/dist21
+	cp -r syllabus/* build/dist21
 
 clean:
 	rm -rf build/*
