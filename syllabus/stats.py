@@ -31,3 +31,11 @@ def count_mature(deck=None, tag=None):
 
 def count_total(deck=None, tag=None):
     return _card_note_query(deck=deck, tag=tag)
+
+def count_suspended(deck=None, tag=None):
+    cond = 'cards.queue == -1'
+    return _card_note_query(condition=cond, deck=deck, tag=tag)
+
+def count_buried(deck=None, tag=None):
+    cond = 'cards.queue == -2 or cards.queue == -3'
+    return _card_note_query(condition=cond, deck=deck, tag=tag)

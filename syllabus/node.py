@@ -4,11 +4,11 @@ import sys
 from aqt import mw, qt
 
 from .info import tags_by_deck, getDecks
-from .stats import count_total, count_new, count_learning, count_young, count_mature
+from .stats import *
 
 # The Order for these must remain the same otherwise shenanigans
-HEADER_LABELS = ['Name', 'Total', 'New', 'Learning', 'Young', 'Mature']
-NAME,TOTAL,NEW,LEARNING,YOUNG,MATURE= range(len(HEADER_LABELS))
+HEADER_LABELS = ['Name', 'Total', 'New', 'Learning', 'Young', 'Mature', 'Buried', 'Suspended']
+NAME,TOTAL,NEW,LEARNING,YOUNG,MATURE,BURIED,SUSPENDED= range(len(HEADER_LABELS))
 DEFAULT_COLUMNS = [NAME, TOTAL, NEW, LEARNING, YOUNG, MATURE]
 
 # sys.setrecursionlimit(4000)
@@ -65,6 +65,22 @@ class Node:
             else:
                 self.data['mature'] = count_mature(deck=self.deck)
         return self.data['mature']
+    
+    def card_suspended(self):
+        if 'suspended' not in self.data.keys():
+            if self.kind is 'tag':
+                self.data['suspended'] = count_suspended(deck=self.deck, tag=self.name)
+            else:
+                self.data['suspended'] = count_suspended(deck=self.deck)
+        return self.data['suspended']
+    
+    def card_buried(self):
+        if 'buried' not in self.data.keys():
+            if self.kind is 'tag':
+                self.data['buried'] = count_buried(deck=self.deck, tag=self.name)
+            else:
+                self.data['buried'] = count_buried(deck=self.deck)
+        return self.data['buried']
             
 
 # QObject Output Methods
@@ -99,6 +115,17 @@ class Node:
             res.append(self.q_mature())
         else:
             res.append(qt.QStandardItem())
+        
+        if BURIED in cols:
+            res.append(self.q_buried())
+        else:
+            res.append(qt.QStandardItem())
+        
+        if SUSPENDED in cols:
+            res.append(self.q_suspended())
+        else:
+            res.append(qt.QStandardItem())
+        
         return res
 
 
@@ -130,11 +157,22 @@ class Node:
         q_mature.setForeground(qt.QColor(0, 119, 0))
 
         return q_mature
+    
+    def q_buried(self):
+        q_buried = qt.QStandardItem(str(self.card_buried()))
 
+        return q_buried
+
+    def q_suspended(self):
+        q_suspended = qt.QStandardItem(str(self.card_suspended()))
+
+        return q_suspended
 # File Output Methods
 
     def collate_dicts(self, res=[]):
-        tmp = {'name': self.name, 'deck': self.deck, 'kind': self.kind, 'total': self.card_total()}
+        tmp = {'name': self.name, 'deck': self.deck, 'kind': self.kind}
+        for k,v in self.data.items():
+            tmp[k] = v
         res.append(tmp)
         for child in self.children:
             child.collate_dicts(res)

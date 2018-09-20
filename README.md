@@ -4,21 +4,25 @@ An [Anki](https://apps.ankiweb.net/) addon designed to show deck statistics brok
 
 ![](images/syllabus-main.png)
 
-Currently shows Total, New, Learning, Young, and Mature card counts for each deck and tag.
+#### Usage
 
-Respects tag and deck hierarchies, so tag:Foo includes stats for tag:Foo::Bar, and likewise for decks and subdecks.
-
-Open Syllabus through Tools > Syllabus:
+Open Syllabus through Tools > Syllabus
 
 ![](images/syllabus-open.png)
+
+This then runs syllabus with the default column selection (Total, New, Learning, Young, and Mature). If you have a very large collection this may take some time, however it's normally just a couple of seconds.
+
+If you wish to change the column selection, simply check or uncheck in the column settings list, then click `Apply Columns`. This then regenerates the tree with the new selection. Note that becuase Syllabus doesn't calculate the stats on unselected columns to save time, adding more columns may take Syllabus longer to generate.
+
+Clicking the `Export` button opens a file dialog allowing you to export the tree to a csv file. Exporting the tree will export the data currently viewable in the tree, any unchecked columns will not be exported.
 
 #### To Do
 
 * On double click open browser on tag/deck
 * Fix sorting to make logical sense - No idea what's happening now
 * Add lapses and reviews in a way that is useful
-* Allow for selective hiding of columns
-* Export to image/csv
+* ~~Allow for selective hiding of columns~~
+* ~~Export to image/csv~~
 
 ***
 

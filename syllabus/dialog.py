@@ -50,12 +50,14 @@ class SyllabusDialog(QDialog, Ui_Syllabus):
     def output_tree(self):
         path, _ = QFileDialog.getSaveFileName(self,"Export Syllabus Tree","tmp.csv","CSV Files (*.csv)")
         parts = path.split('.')
+        data = []
         if parts[-1] not in ['csv', 'CSV']:
             path += '.csv'
         if path:
-            data = self.tree_view.tree.collate_dicts()
+            data = self.tree_view.tree.collate_dicts(res=[]) # Need to instantiate res as [] each time, otherwise remembers
+
             with open(path, 'w') as f:
-                writer = csv.DictWriter(f, data[0].keys())
+                writer = csv.DictWriter(f, fieldnames=data[0].keys())
                 writer.writeheader()
                 writer.writerows(data)
 

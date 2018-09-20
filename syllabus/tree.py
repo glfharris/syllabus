@@ -27,6 +27,7 @@ class SyllabusTreeView(QTreeView):
 
     def gen_tree(self, cols=DEFAULT_COLUMNS):
         self.model.removeRows(0, self.model.rowCount())
+
         mw.progress.start(label='Collecting data and building tree\nThis can take a while for large collections')
 
         self.tree = Node('collection', 'collection', 'collection')
