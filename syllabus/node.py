@@ -30,6 +30,12 @@ class Node:
         if 'total' not in self.data.keys():
             if self.kind is 'tag':
                 self.data['total'] = count_total(deck=self.deck, tag=self.name)
+            elif self.kind is 'deck':
+                tmp = count_total(deck=self.deck)
+                for child in self.children:
+                    if child.kind is 'deck':
+                        tmp += child.card_total()
+                self.data['total'] = tmp
             else:
                 self.data['total'] = count_total(deck=self.deck)
         return self.data['total']
@@ -38,6 +44,12 @@ class Node:
         if 'new' not in self.data.keys():
             if self.kind is 'tag':
                 self.data['new'] = count_new(deck=self.deck, tag=self.name)
+            elif self.kind is 'deck':
+                tmp = count_new(deck=self.deck)
+                for child in self.children:
+                    if child.kind is 'deck':
+                        tmp += child.card_new()
+                self.data['new'] = tmp
             else:
                 self.data['new'] = count_new(deck=self.deck)
         return self.data['new']
@@ -46,6 +58,12 @@ class Node:
         if 'learning' not in self.data.keys():
             if self.kind is 'tag':
                 self.data['learning'] = count_learning(deck=self.deck, tag=self.name)
+            elif self.kind is 'deck':
+                tmp = count_learning(deck=self.deck)
+                for child in self.children:
+                    if child.kind is 'deck':
+                        tmp += child.card_learning()
+                self.data['learning'] = tmp
             else:
                 self.data['learning'] = count_learning(deck=self.deck)
         return self.data['learning']
@@ -54,6 +72,12 @@ class Node:
         if 'young' not in self.data.keys():
             if self.kind is 'tag':
                 self.data['young'] = count_young(deck=self.deck, tag=self.name)
+            elif self.kind is 'deck':
+                tmp = count_young(deck=self.deck)
+                for child in self.children:
+                    if child.kind is 'deck':
+                        tmp += child.card_young()
+                self.data['young'] = tmp
             else:
                 self.data['young'] = count_young(deck=self.deck)
         return self.data['young']
@@ -62,6 +86,12 @@ class Node:
         if 'mature' not in self.data.keys():
             if self.kind is 'tag':
                 self.data['mature'] = count_mature(deck=self.deck, tag=self.name)
+            elif self.kind is 'deck':
+                tmp = count_mature(deck=self.deck)
+                for child in self.children:
+                    if child.kind is 'deck':
+                        tmp += child.card_mature()
+                self.data['mature'] = tmp
             else:
                 self.data['mature'] = count_mature(deck=self.deck)
         return self.data['mature']
@@ -70,6 +100,12 @@ class Node:
         if 'suspended' not in self.data.keys():
             if self.kind is 'tag':
                 self.data['suspended'] = count_suspended(deck=self.deck, tag=self.name)
+            elif self.kind is 'deck':
+                tmp = count_suspended(deck=self.deck)
+                for child in self.children:
+                    if child.kind is 'deck':
+                        tmp += child.card_suspended()
+                self.data['suspended'] = tmp
             else:
                 self.data['suspended'] = count_suspended(deck=self.deck)
         return self.data['suspended']
@@ -78,6 +114,12 @@ class Node:
         if 'buried' not in self.data.keys():
             if self.kind is 'tag':
                 self.data['buried'] = count_buried(deck=self.deck, tag=self.name)
+            elif self.kind is 'deck':
+                tmp = count_buried(deck=self.deck)
+                for child in self.children:
+                    if child.kind is 'deck':
+                        tmp += child.card_buried()
+                self.data['buried'] = tmp
             else:
                 self.data['buried'] = count_buried(deck=self.deck)
         return self.data['buried']
