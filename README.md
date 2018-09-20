@@ -16,6 +16,13 @@ If you wish to change the column selection, simply check or uncheck in the colum
 
 Clicking the `Export` button opens a file dialog allowing you to export the tree to a csv file. Exporting the tree will export the data currently viewable in the tree, any unchecked columns will not be exported.
 
+#### Install
+
+[Add-on page](https://ankiweb.net/shared/info/668156440) or just use code `668156440`
+
+#### Change Log
+* 2018-09-20 - v0.1.0 - Initial Release
+
 #### To Do
 
 * On double click open browser on tag/deck
