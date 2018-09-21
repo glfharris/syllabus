@@ -28,8 +28,7 @@ Clicking the `Export` button opens a file dialog allowing you to export the tree
 * On double click open browser on tag/deck
 * Fix sorting to make logical sense - No idea what's happening now
 * Add lapses and reviews in a way that is useful
-* ~~Allow for selective hiding of columns~~
-* ~~Export to image/csv~~
+* Investigate Stats window opening on Tag
 
 ***
 
