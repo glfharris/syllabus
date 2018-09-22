@@ -7,8 +7,8 @@ from .info import tags_by_deck, getDecks
 from .stats import *
 
 # The Order for these must remain the same otherwise shenanigans
-HEADER_LABELS = ['Name', 'Total', 'New', 'Learning', 'Young', 'Mature', 'Buried', 'Suspended']
-NAME,TOTAL,NEW,LEARNING,YOUNG,MATURE,BURIED,SUSPENDED= range(len(HEADER_LABELS))
+HEADER_LABELS = ['Name', 'Kind', 'Deck', 'Total', 'New', 'Learning', 'Young', 'Mature', 'Buried', 'Suspended']
+NAME,KIND, DECK, TOTAL,NEW,LEARNING,YOUNG,MATURE,BURIED,SUSPENDED= range(len(HEADER_LABELS))
 DEFAULT_COLUMNS = [NAME, TOTAL, NEW, LEARNING, YOUNG, MATURE]
 
 # sys.setrecursionlimit(4000)
@@ -132,6 +132,9 @@ class Node:
         name = qt.QStandardItem(self.name) # We need NAME regardless of whether in cols
         name.setIcon(qt.QIcon(':/icons/{}.svg'.format(self.kind)))
         res.append(name)
+
+        res.append(qt.QStandardItem(self.kind))
+        res.append(qt.QStandardItem(self.deck))
 
         if TOTAL in cols:
             res.append(self.q_total())

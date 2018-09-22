@@ -45,6 +45,7 @@ class SyllabusTreeView(QTreeView):
                 self.setColumnHidden(i, False)
         
         mw.progress.finish()
+        
     
     def _populateTree(self, children, parent, cols=DEFAULT_COLUMNS):
         for child in children:
