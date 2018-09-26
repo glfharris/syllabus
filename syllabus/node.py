@@ -7,11 +7,9 @@ from .info import tags_by_deck, getDecks
 from .stats import *
 
 # The Order for these must remain the same otherwise shenanigans
-HEADER_LABELS = ['Name', 'Kind', 'Deck', 'Total', 'New', 'Learning', 'Young', 'Mature', 'Buried', 'Suspended']
-NAME,KIND, DECK, TOTAL,NEW,LEARNING,YOUNG,MATURE,BURIED,SUSPENDED= range(len(HEADER_LABELS))
+HEADER_LABELS = ['Name', 'Kind', 'Deck', 'Total', 'New', 'Learning', 'Young', 'Mature', 'Buried', 'Suspended', 'Ease']
+NAME,KIND, DECK, TOTAL,NEW,LEARNING,YOUNG,MATURE,BURIED,SUSPENDED,EASE= range(len(HEADER_LABELS))
 DEFAULT_COLUMNS = [NAME, TOTAL, NEW, LEARNING, YOUNG, MATURE]
-
-# sys.setrecursionlimit(4000)
 
 class Node:
     tag_names = {}
@@ -26,103 +24,41 @@ class Node:
         return '<{} - {}>'.format(self.kind, self.name)
 
 # Data methods
-    def card_total(self):
-        if 'total' not in self.data.keys():
+    def _query(self, func, val):
+        if val not in self.data.keys():
             if self.kind is 'tag':
-                self.data['total'] = count_total(deck=self.deck, tag=self.name)
+                res = func(deck=[self.deck], tag=self.name)
             elif self.kind is 'deck':
-                tmp = count_total(deck=self.deck)
-                for child in self.children:
-                    if child.kind is 'deck':
-                        tmp += child.card_total()
-                self.data['total'] = tmp
+                decks = [self.deck] + self.get_child_dids(res=[])
+                res = func(deck=decks)
             else:
-                self.data['total'] = count_total(deck=self.deck)
-        return self.data['total']
+                res = func()
+            self.data[val] = res
+        return self.data[val]
+
+    def card_total(self):
+        return self._query(total, 'total')
     
     def card_new(self):
-        if 'new' not in self.data.keys():
-            if self.kind is 'tag':
-                self.data['new'] = count_new(deck=self.deck, tag=self.name)
-            elif self.kind is 'deck':
-                tmp = count_new(deck=self.deck)
-                for child in self.children:
-                    if child.kind is 'deck':
-                        tmp += child.card_new()
-                self.data['new'] = tmp
-            else:
-                self.data['new'] = count_new(deck=self.deck)
-        return self.data['new']
+        return self._query(new, 'new')
     
     def card_learning(self):
-        if 'learning' not in self.data.keys():
-            if self.kind is 'tag':
-                self.data['learning'] = count_learning(deck=self.deck, tag=self.name)
-            elif self.kind is 'deck':
-                tmp = count_learning(deck=self.deck)
-                for child in self.children:
-                    if child.kind is 'deck':
-                        tmp += child.card_learning()
-                self.data['learning'] = tmp
-            else:
-                self.data['learning'] = count_learning(deck=self.deck)
-        return self.data['learning']
+        return self._query(learning, 'learning')
     
     def card_young(self):
-        if 'young' not in self.data.keys():
-            if self.kind is 'tag':
-                self.data['young'] = count_young(deck=self.deck, tag=self.name)
-            elif self.kind is 'deck':
-                tmp = count_young(deck=self.deck)
-                for child in self.children:
-                    if child.kind is 'deck':
-                        tmp += child.card_young()
-                self.data['young'] = tmp
-            else:
-                self.data['young'] = count_young(deck=self.deck)
-        return self.data['young']
+        return self._query(young, 'young')
     
     def card_mature(self):
-        if 'mature' not in self.data.keys():
-            if self.kind is 'tag':
-                self.data['mature'] = count_mature(deck=self.deck, tag=self.name)
-            elif self.kind is 'deck':
-                tmp = count_mature(deck=self.deck)
-                for child in self.children:
-                    if child.kind is 'deck':
-                        tmp += child.card_mature()
-                self.data['mature'] = tmp
-            else:
-                self.data['mature'] = count_mature(deck=self.deck)
-        return self.data['mature']
+        return self._query(mature, 'mature')
     
     def card_suspended(self):
-        if 'suspended' not in self.data.keys():
-            if self.kind is 'tag':
-                self.data['suspended'] = count_suspended(deck=self.deck, tag=self.name)
-            elif self.kind is 'deck':
-                tmp = count_suspended(deck=self.deck)
-                for child in self.children:
-                    if child.kind is 'deck':
-                        tmp += child.card_suspended()
-                self.data['suspended'] = tmp
-            else:
-                self.data['suspended'] = count_suspended(deck=self.deck)
-        return self.data['suspended']
+        return self._query(suspended, 'suspended')
     
     def card_buried(self):
-        if 'buried' not in self.data.keys():
-            if self.kind is 'tag':
-                self.data['buried'] = count_buried(deck=self.deck, tag=self.name)
-            elif self.kind is 'deck':
-                tmp = count_buried(deck=self.deck)
-                for child in self.children:
-                    if child.kind is 'deck':
-                        tmp += child.card_buried()
-                self.data['buried'] = tmp
-            else:
-                self.data['buried'] = count_buried(deck=self.deck)
-        return self.data['buried']
+        return self._query(buried, 'buried')
+    
+    def card_ease(self):
+        return self._query(ease, 'ease')
             
 
 # QObject Output Methods
@@ -171,6 +107,11 @@ class Node:
         else:
             res.append(qt.QStandardItem())
         
+        if EASE in cols:
+            res.append(self.q_ease())
+        else:
+            res.append(qt.QStandardItem())
+        
         return res
 
 
@@ -212,6 +153,15 @@ class Node:
         q_suspended = qt.QStandardItem(str(self.card_suspended()))
 
         return q_suspended
+    
+    def q_ease(self):
+        tmp = self.card_ease()
+        if tmp:
+            q_ease = qt.QStandardItem('{:.0%}'.format(self.card_ease() / 1000))
+        else:
+            q_ease = qt.QStandardItem()
+
+        return q_ease
 # File Output Methods
 
     def collate_dicts(self, res=[]):
@@ -277,3 +227,13 @@ class Node:
             return False
         else:
             return True
+
+    def get_child_dids(self, res=[]):
+        if self.kind == 'tag':
+            return None
+        else:
+            for child in self.children:
+                if child.kind == 'deck':
+                    res.append(child.deck)
+                child.get_child_dids(res=res)
+        return list(set(res))
