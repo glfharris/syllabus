@@ -18,7 +18,7 @@ def count_new(deck=None, tag=None):
     return _card_note_query(condition=cond, deck=deck, tag=tag)
 
 def count_learning(deck=None, tag=None):
-    cond = 'cards.queue == 1'
+    cond = 'cards.queue == 1 or cards.queue == 3'
     return _card_note_query(condition=cond, deck=deck, tag=tag)
 
 def count_young(deck=None, tag=None):

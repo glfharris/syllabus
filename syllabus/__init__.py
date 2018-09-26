@@ -14,4 +14,3 @@ a = QAction("Syllabus", mw)
 a.triggered.connect(syllabusLauncher)
 
 mw.form.menuTools.addAction(a)
-
