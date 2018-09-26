@@ -65,6 +65,6 @@ def buried(deck=None, tag=None):
     return mw.col.db.scalar(_c_n_query('count()', deck=deck, tag=tag, card_cond=[cond]))
 
 def ease(deck=None, tag=None):
-    inner_q = _as(_c_n_query('cards.factor as factor', deck=deck, tag=tag), 'cards_notes')
+    inner_q = _as(_c_n_query('cards.factor as factor', deck=deck, tag=tag, card_cond=['cards.factor > 0']), 'cards_notes')
     tmp = 'select avg(factor) from {}'.format(inner_q)
     return mw.col.db.scalar(tmp)
