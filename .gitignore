@@ -1,3 +1,5 @@
 ui_*.py
 *.zip
 build/*
+
+__pycache__
