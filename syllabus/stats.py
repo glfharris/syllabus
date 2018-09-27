@@ -34,6 +34,15 @@ def _c_n_query(select, deck=None, tag=None, card_cond=None, card_sel='*', note_c
     query = ['select', select, 'from', card_table, 'inner join', note_table, 'on cards.nid=notes.id']
     return ' '.join(query)
 
+def _r_query(select='*', rev_cond=None):
+    conds = ' and '.join(rev_cond)
+    if rev_cond:
+        rev_table = '(select {} from revlog where {}) as revlog'.format(select, conds)
+    else:
+        rev_table = '(select {} from revlog) as revlog'.format(select)
+    
+    return rev_table
+
 def _as(subquery, q_as):
     return '({}) as {}'.format(subquery, q_as)
 
@@ -68,3 +77,28 @@ def ease(deck=None, tag=None):
     inner_q = _as(_c_n_query('cards.factor as factor', deck=deck, tag=tag, card_cond=['cards.factor > 0']), 'cards_notes')
     tmp = 'select avg(factor) from {}'.format(inner_q)
     return mw.col.db.scalar(tmp)
+
+def retention(deck=None, tag=None, retention='mature'):
+    if retention == 'mature':
+        last_ivl = '>= 21'
+    elif retention == 'young':
+        last_ivl = '< 21'
+    else:
+        last_ivl = None
+
+    if last_ivl:
+        last_ivl_cond = 'revlog.lastIvl {}'.format(last_ivl)
+    else:
+        last_ivl_cond = '1'
+
+    c_n_table = _as(_c_n_query('cards.id as cid', deck=deck, tag=tag), 'cards_notes')
+    passed_rev_table = _r_query(rev_cond=['revlog.ease > 1 and revlog.type == 1', last_ivl_cond])
+    flunked_rev_table = _r_query(rev_cond=['revlog.ease == 1 and revlog.type == 1', last_ivl_cond])
+
+    passed_query = ' '.join(['select count() from', passed_rev_table, 'inner join', c_n_table, 'on revlog.cid=cards_notes.cid'])
+    flunked_query = ' '.join(['select count() from', flunked_rev_table, 'inner join', c_n_table, 'on revlog.cid=cards_notes.cid'])
+
+    passed = mw.col.db.scalar(passed_query)
+    flunked = mw.col.db.scalar(flunked_query)
+
+    return (passed / (passed + flunked))

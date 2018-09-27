@@ -7,8 +7,8 @@ from .info import tags_by_deck, getDecks
 from .stats import *
 
 # The Order for these must remain the same otherwise shenanigans
-HEADER_LABELS = ['Name', 'Kind', 'Deck', 'Total', 'New', 'Learning', 'Young', 'Mature', 'Buried', 'Suspended', 'Ease']
-NAME,KIND, DECK, TOTAL,NEW,LEARNING,YOUNG,MATURE,BURIED,SUSPENDED,EASE= range(len(HEADER_LABELS))
+HEADER_LABELS = ['Name', 'Kind', 'Deck', 'Total', 'New', 'Learning', 'Young', 'Mature', 'Buried', 'Suspended', 'Ease', 'Young Retention', 'Mature Retention', 'Total Retention' ]
+NAME,KIND, DECK, TOTAL,NEW,LEARNING,YOUNG,MATURE,BURIED,SUSPENDED,EASE,YOU_RENT, MAT_RENT, TOT_RENT = range(len(HEADER_LABELS))
 DEFAULT_COLUMNS = [NAME, TOTAL, NEW, LEARNING, YOUNG, MATURE]
 
 class Node:
@@ -24,15 +24,15 @@ class Node:
         return '<{} - {}>'.format(self.kind, self.name)
 
 # Data methods
-    def _query(self, func, val):
+    def _query(self, func, val, **kwargs): # func is the function from .stats to us, val is the self.data key to story computed value
         if val not in self.data.keys():
             if self.kind is 'tag':
-                res = func(deck=[self.deck], tag=self.name)
+                res = func(deck=[self.deck], tag=self.name, **kwargs)
             elif self.kind is 'deck':
                 decks = [self.deck] + self.get_child_dids(res=[])
-                res = func(deck=decks)
+                res = func(deck=decks, **kwargs)
             else:
-                res = func()
+                res = func(**kwargs)
             self.data[val] = res
         return self.data[val]
 
@@ -59,6 +59,15 @@ class Node:
     
     def card_ease(self):
         return self._query(ease, 'ease')
+    
+    def rev_mature_retention(self):
+        return self._query(retention, 'mature_retention', retention='mature')
+    
+    def rev_young_retention(self):
+        return self._query(retention, 'young_retention', retention='young')
+    
+    def rev_total_retention(self):
+        return self._query(retention, 'total_retention', retention='total') # retention=total is a bit sloppy, not actually handled
             
 
 # QObject Output Methods
@@ -112,6 +121,21 @@ class Node:
         else:
             res.append(qt.QStandardItem())
         
+        if YOU_RENT in cols:
+            res.append(self.q_young_retention())
+        else:
+            res.append(qt.QStandardItem())
+
+        if MAT_RENT in cols:
+            res.append(self.q_mature_retention())
+        else:
+            res.append(qt.QStandardItem())
+        
+        if TOT_RENT in cols:
+            res.append(self.q_total_retention())
+        else:
+            res.append(qt.QStandardItem())
+        
         return res
 
 
@@ -162,6 +186,30 @@ class Node:
             q_ease = qt.QStandardItem()
 
         return q_ease
+    
+    def q_mature_retention(self):
+        try:
+            q_mature_retention = qt.QStandardItem('{:.2%}'.format(self.rev_mature_retention()))
+        except ZeroDivisionError:
+            q_mature_retention = qt.QStandardItem()
+
+        return q_mature_retention
+    
+    def q_young_retention(self):
+        try:
+            q_young_retention = qt.QStandardItem('{:.2%}'.format(self.rev_young_retention()))
+        except ZeroDivisionError:
+            q_young_retention = qt.QStandardItem()
+
+        return q_young_retention
+    
+    def q_total_retention(self):
+        try:
+            q_total_retention = qt.QStandardItem('{:.2%}'.format(self.rev_total_retention()))
+        except ZeroDivisionError:
+            q_total_retention = qt.QStandardItem()
+
+        return q_total_retention
 # File Output Methods
 
     def collate_dicts(self, res=[]):
