@@ -46,6 +46,7 @@ class SyllabusTreeView(QTreeView):
                 self.setColumnHidden(i, False)
         
         mw.progress.finish()
+        self.resize(self.viewportSizeHint())
         
     
     def _populateTree(self, children, parent, cols=DEFAULT_COLUMNS):

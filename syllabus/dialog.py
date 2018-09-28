@@ -25,14 +25,21 @@ class SyllabusDialog(QDialog, Ui_Syllabus):
         
         self.export_btn.clicked.connect(self.output_tree)
         self.apply_col_settings.clicked.connect(self.apply_settings)
+
+        tree_size = self.tree_view.viewportSizeHint()
+        group_size = self.groupBox.sizeHint()
+
+        size = QSize(tree_size.width() + group_size.width(), tree_size.height() * 1.1)
         
-        self.resize(self.sizeHint())#tree_view.viewportSizeHint())
+        self.resize(size)
         self.show()
         self.activateWindow()
     
     def populate_column_settings(self):
-        column_dict = {'Total': TOTAL, 'New': NEW, 'Learning': LEARNING, 'Mature': MATURE,
-                            'Retention': {'Young Retention': YOU_RENT, 'Mature Retention': MAT_RENT, 'Total Retention': TOT_RENT}}
+        column_dict = {'Total': TOTAL, 'New': NEW, 'Learning': LEARNING, 'Mature': MATURE, 'Ease': EASE,
+                       'Retention': {'Young Retention': YOU_RENT, 'Mature Retention': MAT_RENT, 'Total Retention': TOT_RENT},
+                       'Unqueued': {'Buried': BURIED, 'Suspended': SUSPENDED},
+                       'Misc': {'Kind': KIND, 'Deck': DECK}}
         model = QStandardItemModel()
         model.setHorizontalHeaderLabels(['Column'])
         self.col_tree.model = model
