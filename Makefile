@@ -6,6 +6,7 @@ clean:
 	rm -rf build/*
 
 buildrelease: build
+	rm -rf syllabus/__pycache__
 	cd build/dist21; zip -r ../anki-syllabus-v21.zip .
 
 buildui: cleanui
