@@ -23,6 +23,7 @@ class SyllabusTreeView(QTreeView):
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         self.gen_tree(cols=cols)
+        self.resize(self.sizeHint())
         
 
     def gen_tree(self, cols=DEFAULT_COLUMNS):
