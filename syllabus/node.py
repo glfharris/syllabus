@@ -72,72 +72,30 @@ class Node:
 
 # QObject Output Methods
     
-    def to_row(self, cols=[0]):
-        res = []
+    def to_q_row(self, cols=[0]):
+        func_dict = {NAME: self.q_name, KIND: self.q_kind, DECK: self.q_deck, TOTAL: self.q_total, NEW: self.q_new, LEARNING: self.q_learning,
+                     YOUNG: self.q_young, MATURE: self.q_mature, BURIED: self.q_buried, SUSPENDED: self.q_suspended, EASE: self.q_ease,
+                     YOU_RENT: self.q_young_retention, MAT_RENT: self.q_mature_retention, TOT_RENT: self.q_total_retention}
+
+        q_row = []
+        for x in range(len(HEADER_LABELS)):
+            q_row.append(qt.QStandardItem())
+
+        for column in cols:
+            q_row[column] = func_dict[column]()
+        
+        return q_row
+
+    def q_name(self):
         name = qt.QStandardItem(self.name) # We need NAME regardless of whether in cols
         name.setIcon(qt.QIcon(':/icons/{}.svg'.format(self.kind)))
-        res.append(name)
-
-        res.append(qt.QStandardItem(self.kind))
-        res.append(qt.QStandardItem(self.deck))
-
-        if TOTAL in cols:
-            res.append(self.q_total())
-        else:
-            res.append(qt.QStandardItem())
-        
-        if NEW in cols:
-            res.append(self.q_new())
-        else:
-            res.append(qt.QStandardItem())
-        
-        if LEARNING in cols:
-            res.append(self.q_learning())
-        else:
-            res.append(qt.QStandardItem())
-
-        if YOUNG in cols:
-            res.append(self.q_young())
-        else:
-            res.append(qt.QStandardItem())
-        
-        if MATURE in cols:
-            res.append(self.q_mature())
-        else:
-            res.append(qt.QStandardItem())
-        
-        if BURIED in cols:
-            res.append(self.q_buried())
-        else:
-            res.append(qt.QStandardItem())
-        
-        if SUSPENDED in cols:
-            res.append(self.q_suspended())
-        else:
-            res.append(qt.QStandardItem())
-        
-        if EASE in cols:
-            res.append(self.q_ease())
-        else:
-            res.append(qt.QStandardItem())
-        
-        if YOU_RENT in cols:
-            res.append(self.q_young_retention())
-        else:
-            res.append(qt.QStandardItem())
-
-        if MAT_RENT in cols:
-            res.append(self.q_mature_retention())
-        else:
-            res.append(qt.QStandardItem())
-        
-        if TOT_RENT in cols:
-            res.append(self.q_total_retention())
-        else:
-            res.append(qt.QStandardItem())
-        
-        return res
-
+        return name
+    
+    def q_kind(self):
+        return qt.QStandardItem(self.kind)
+    
+    def q_deck(self):
+        return qt.QStandardItem(self.deck)
 
     def q_total(self):
         q_total = qt.QStandardItem(str(self.card_total()))

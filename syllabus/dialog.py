@@ -24,6 +24,8 @@ class SyllabusDialog(QDialog, Ui_Syllabus):
         self.export_btn.clicked.connect(self.output_tree)
         self.apply_col_settings.clicked.connect(self.apply_settings)
         self.populate_column_settings()
+        
+        
 
         self.show()
         self.activateWindow()
@@ -31,14 +33,18 @@ class SyllabusDialog(QDialog, Ui_Syllabus):
     def populate_column_settings(self):
         for i, label in enumerate(HEADER_LABELS):
             item = QListWidgetItem(label)
+            item.setData(Qt.UserRole, i)
             if label != 'Name':
                 item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
             if i in DEFAULT_COLUMNS and label != 'Name':
                 item.setCheckState(Qt.Checked)
             elif label != 'Name':
                 item.setCheckState(Qt.Unchecked)
+            print(item.data(0), item.data(Qt.UserRole))
             self.col_settings_list.addItem(item)
         self.col_settings_list.setSizeAdjustPolicy(QListWidget.AdjustToContents)
+        
+        #self.col_settings_list.setMargin(0)
     
     def apply_settings(self):
         res = [0, ]

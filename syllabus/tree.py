@@ -49,7 +49,7 @@ class SyllabusTreeView(QTreeView):
     
     def _populateTree(self, children, parent, cols=DEFAULT_COLUMNS):
         for child in children:
-            row = child.to_row(cols=cols)
+            row = child.to_q_row(cols=cols)
             parent.appendRow(row)
             self._populateTree(child.children, row[0], cols=cols)
 
