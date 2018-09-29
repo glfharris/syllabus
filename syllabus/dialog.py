@@ -19,7 +19,7 @@ class SyllabusDialog(QDialog, Ui_Syllabus):
         self.setupUi(self)
         self.tree_view = SyllabusTreeView(cols=config['last_columns'])
 
-        self.horizontalLayout.addWidget(self.tree_view, 60)
+        self.horizontalLayout.addWidget(self.tree_view, 80)
 
         self.populate_column_settings()
         self.col_tree.clicked.connect(self.on_tree_view_check)
