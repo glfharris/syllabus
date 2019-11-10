@@ -111,7 +111,7 @@ class SyllabusDialog(QDialog, Ui_Syllabus):
         if path:
             data = self.tree_view.tree.collate_dicts(res=[]) # Need to instantiate res as [] each time, otherwise remembers
 
-            with open(path, 'w') as f:
+            with open(path, 'w', encoding='utf-8') as f:
                 writer = csv.DictWriter(f, fieldnames=data[0].keys())
                 writer.writeheader()
                 writer.writerows(data)
