@@ -4,7 +4,7 @@ An Anki add-on for exploring collection statistics by deck and tag.
 
 Open it from `Tools > Syllabus`.
 
-<img src="https://www.github.com/glfharris/syllabus/blob/master/syllabus.jpg?raw=true">
+![](syllabus.jpg)
 
 ## Features
 
