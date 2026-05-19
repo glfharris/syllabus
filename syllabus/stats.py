@@ -1,84 +1,80 @@
 from aqt import mw
 
-def _c_n_query(select, deck=None, tag=None, card_cond=None, card_sel='*', note_cond=None, note_sel='*'):
+
+def collection_or_default(col=None):
+    return col or mw.col
+
+
+def _sql_list(values):
+    return ','.join('?' for _ in values)
+
+
+def _escape_like(value):
+    return (
+        value
+        .replace('\\', '\\\\')
+        .replace('%', '\\%')
+        .replace('_', '\\_')
+    )
+
+
+def _card_note_conditions(deck=None, tag=None, card_cond=None, note_cond=None):
     n_conds = []
     c_conds = []
+    n_params = []
+    c_params = []
+
     if tag:
-        n_conds.append('notes.tags like "% {}%"'.format(tag))
+        escaped_tag = _escape_like(tag)
+        n_conds.append("(notes.tags like ? escape '\\' or notes.tags like ? escape '\\')")
+        n_params.extend([f'% {escaped_tag} %', f'% {escaped_tag}::%'])
+
     if deck:
-        c_conds.append('cards.did in ({})'.format(', '.join(deck)))
+        deck_ids = [int(deck_id) for deck_id in deck]
+        placeholders = _sql_list(deck_ids)
+        c_conds.append(
+            f'(cards.did in ({placeholders}) or cards.odid in ({placeholders}))'
+        )
+        c_params.extend(deck_ids + deck_ids)
     
     if card_cond:
         c_conds += card_cond
     if note_cond:
         n_conds += note_cond
     
-    n_conds = ' and '.join(n_conds)
-    c_conds = ' and '.join(c_conds)
+    conds = c_conds + n_conds
+    params = c_params + n_params
+    if conds:
+        return ' where ' + ' and '.join(conds), params
+
+    return '', params
 
 
-    if c_conds:
-        card_table = '(select {} from cards where {}) as cards'.format(card_sel, c_conds)
-    elif c_conds is None and card_sel is not '*':
-        card_table = '(select {} from cards) as cards'.format(card_sel)
-    else:
-        card_table = 'cards'
-    
-    if n_conds:
-        note_table = '(select {} from notes where {}) as notes'.format(note_sel, n_conds)
-    elif n_conds is None and note_sel is not '*':
-        note_table = '(select {} from notes) as notes'.format(note_sel)
-    else:
-        note_table = 'notes'
-    
-    query = ['select', select, 'from', card_table, 'inner join', note_table, 'on cards.nid=notes.id']
-    return ' '.join(query)
+def _c_n_scalar(select, deck=None, tag=None, card_cond=None, note_cond=None, col=None):
+    where, params = _card_note_conditions(
+        deck=deck,
+        tag=tag,
+        card_cond=card_cond,
+        note_cond=note_cond,
+    )
+    query = f'''
+        select {select}
+        from cards
+        inner join notes on cards.nid = notes.id
+        {where}
+    '''
+    return collection_or_default(col).db.scalar(query, *params)
 
-def _r_query(select='*', rev_cond=None):
-    conds = ' and '.join(rev_cond)
-    if rev_cond:
-        rev_table = '(select {} from revlog where {}) as revlog'.format(select, conds)
-    else:
-        rev_table = '(select {} from revlog) as revlog'.format(select)
-    
-    return rev_table
+def ease(deck=None, tag=None, col=None):
+    return _c_n_scalar(
+        'avg(cards.factor)',
+        deck=deck,
+        tag=tag,
+        card_cond=['cards.factor > 0'],
+        col=col,
+    )
 
-def _as(subquery, q_as):
-    return '({}) as {}'.format(subquery, q_as)
-
-def total(deck=None, tag=None):
-    return mw.col.db.scalar(_c_n_query('count()', deck=deck, tag=tag))
-
-def new(deck=None, tag=None):
-    cond = 'cards.queue == 0'
-    return mw.col.db.scalar(_c_n_query('count()', deck=deck, tag=tag, card_cond=[cond]))
-
-def learning(deck=None, tag=None):
-    cond = '(cards.queue == 1 or cards.queue == 3)'
-    return mw.col.db.scalar(_c_n_query('count()', deck=deck, tag=tag, card_cond=[cond]))
-
-def young(deck=None, tag=None):
-    cond = 'cards.queue == 2 and cards.ivl < 21'
-    return mw.col.db.scalar(_c_n_query('count()', deck=deck, tag=tag, card_cond=[cond]))
-
-def mature(deck=None, tag=None):
-    cond = 'cards.queue == 2 and cards.ivl >= 21'
-    return mw.col.db.scalar(_c_n_query('count()', deck=deck, tag=tag, card_cond=[cond]))
-
-def suspended(deck=None, tag=None):
-    cond = 'cards.queue == -1'
-    return mw.col.db.scalar(_c_n_query('count()', deck=deck, tag=tag, card_cond=[cond]))
-
-def buried(deck=None, tag=None):
-    cond = '(cards.queue == -2 or cards.queue == -3)'
-    return mw.col.db.scalar(_c_n_query('count()', deck=deck, tag=tag, card_cond=[cond]))
-
-def ease(deck=None, tag=None):
-    inner_q = _as(_c_n_query('cards.factor as factor', deck=deck, tag=tag, card_cond=['cards.factor > 0']), 'cards_notes')
-    tmp = 'select avg(factor) from {}'.format(inner_q)
-    return mw.col.db.scalar(tmp)
-
-def retention(deck=None, tag=None, retention='mature'):
+def retention(deck=None, tag=None, retention='mature', col=None):
     if retention == 'mature':
         last_ivl = '>= 21'
     elif retention == 'young':
@@ -91,14 +87,26 @@ def retention(deck=None, tag=None, retention='mature'):
     else:
         last_ivl_cond = '1'
 
-    c_n_table = _as(_c_n_query('cards.id as cid', deck=deck, tag=tag), 'cards_notes')
-    passed_rev_table = _r_query(rev_cond=['revlog.ease > 1 and revlog.type == 1', last_ivl_cond])
-    flunked_rev_table = _r_query(rev_cond=['revlog.ease == 1 and revlog.type == 1', last_ivl_cond])
+    card_note_where, params = _card_note_conditions(deck=deck, tag=tag)
+    base_where = card_note_where[7:] if card_note_where.startswith(' where ') else '1'
 
-    passed_query = ' '.join(['select count() from', passed_rev_table, 'inner join', c_n_table, 'on revlog.cid=cards_notes.cid'])
-    flunked_query = ' '.join(['select count() from', flunked_rev_table, 'inner join', c_n_table, 'on revlog.cid=cards_notes.cid'])
+    passed_query = f'''
+        select count()
+        from revlog
+        inner join cards on revlog.cid = cards.id
+        inner join notes on cards.nid = notes.id
+        where revlog.ease > 1 and revlog.type = 1 and {last_ivl_cond} and {base_where}
+    '''
+    flunked_query = f'''
+        select count()
+        from revlog
+        inner join cards on revlog.cid = cards.id
+        inner join notes on cards.nid = notes.id
+        where revlog.ease = 1 and revlog.type = 1 and {last_ivl_cond} and {base_where}
+    '''
 
-    passed = mw.col.db.scalar(passed_query)
-    flunked = mw.col.db.scalar(flunked_query)
+    collection = collection_or_default(col)
+    passed = collection.db.scalar(passed_query, *params)
+    flunked = collection.db.scalar(flunked_query, *params)
 
     return (passed / (passed + flunked))

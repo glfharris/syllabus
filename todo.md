@@ -1,1 +1,0 @@
-* Investigate language translations

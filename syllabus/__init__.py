@@ -1,16 +1,20 @@
 import aqt
-from aqt import mw, DialogManager
-from aqt.qt import *
-from aqt.utils import showInfo
+from aqt import mw
+from aqt.qt import QAction
+from aqt.utils import qconnect
 
 from .dialog import SyllabusDialog
 
-DialogManager._dialogs["Syllabus"] = [SyllabusDialog, None]
+DIALOG_NAME = "Syllabus"
 
-def syllabusLauncher():
-    aqt.dialogs.open("Syllabus", mw)
 
-a = QAction("Syllabus", mw)
-a.triggered.connect(syllabusLauncher)
+def syllabus_launcher():
+    aqt.dialogs.open(DIALOG_NAME, mw)
 
-mw.form.menuTools.addAction(a)
+
+aqt.dialogs.register_dialog(DIALOG_NAME, SyllabusDialog)
+
+action = QAction("Syllabus", mw)
+qconnect(action.triggered, syllabus_launcher)
+
+mw.form.menuTools.addAction(action)

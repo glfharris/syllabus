@@ -1,3 +1,11 @@
 {
-    "last_columns": [0,3,4,5,6,7]
+    "last_columns": [0, 3, 4, 5, 6, 7],
+    "show_columns": true,
+    "window_size": [980, 620],
+    "splitter_sizes": [760, 220],
+    "hide_empty": false,
+    "show_decks": true,
+    "show_tags": false,
+    "show_root": true,
+    "expanded_nodes": []
 }
